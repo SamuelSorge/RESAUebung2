@@ -3,8 +3,8 @@
 System A
 
 
-ID DoorSensor = -7
-ID WindowSensor = -8
-ID MotionDetection = -9
-
-ID SecurityController = 3
+ID DoorSensor = -7 <br/>
+ID WindowSensor = -8 <br/>
+ID MotionDetection = -9 <br/>
+<br/><br/>
+ID SecurityController = 3 <br/>
