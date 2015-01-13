@@ -27,214 +27,214 @@ import java.util.*;
 
 class HumiditySensor extends AbstractDevice
 {
-	public static int main(String args[])
-	{
+    public static int main(String args[])
+    {
         HumiditySensor s = new HumiditySensor();
         return s.mainLoop(args);
     }
 
-		boolean HumidifierState = false;	// Humidifier state: false == off, true == on
-		boolean DehumidifierState = false;	// Dehumidifier state: false == off, true == on
-		float RelativeHumidity;				// Current simulated ambient room humidity
-		float DriftValue;					// The amount of humidity gained or lost
+    boolean HumidifierState = false;	// Humidifier state: false == off, true == on
+    boolean DehumidifierState = false;	// Dehumidifier state: false == off, true == on
+    float RelativeHumidity;				// Current simulated ambient room humidity
+    float DriftValue;					// The amount of humidity gained or lost
 
     public void InitDevice()
     {
-			// We create a message window. Note that we place this panel about 1/2 across
-			// and 2/3s down the screen
+        // We create a message window. Note that we place this panel about 1/2 across
+        // and 2/3s down the screen
 
-			float WinPosX = 0.5f; 	//This is the X position of the message window in terms
-									//of a percentage of the screen height
-			float WinPosY = 0.60f;	//This is the Y position of the message window in terms
-								 	//of a percentage of the screen height
+        float WinPosX = 0.5f; 	//This is the X position of the message window in terms
+        //of a percentage of the screen height
+        float WinPosY = 0.60f;	//This is the Y position of the message window in terms
+        //of a percentage of the screen height
 
-			mw = new MessageWindow("Humidity Sensor", WinPosX, WinPosY);
+        mw = new MessageWindow("Humidity Sensor", WinPosX, WinPosY);
 
-			mw.WriteMessage("Registered with the message manager." );
+        mw.WriteMessage("Registered with the message manager." );
 
-	    	try
-	    	{
-				mw.WriteMessage("   Participant id: " + em.GetMyId() );
-				mw.WriteMessage("   Registration Time: " + em.GetRegistrationTime() );
-
-			} // try
-
-	    	catch (Exception e)
-			{
-				mw.WriteMessage("Error:: " + e);
-
-			} // catch
-
-			mw.WriteMessage("\nInitializing Humidity Simulation::" );
-
-			RelativeHumidity = GetRandomNumber() * (float) 100.00;
-
-			if ( CoinToss() )
-			{
-				DriftValue = GetRandomNumber() * (float) -1.0;
-
-			} else {
-
-				DriftValue = GetRandomNumber();
-
-			} // if
-
-			mw.WriteMessage("   Initial Humidity Set:: " + RelativeHumidity );
-			mw.WriteMessage("   Drift Value Set:: " + DriftValue );
-        }
-
-        public void FunctionBeforeRead()
+        try
         {
-            // Post the current relative humidity
+            mw.WriteMessage("   Participant id: " + em.GetMyId() );
+            mw.WriteMessage("   Registration Time: " + em.GetRegistrationTime() );
 
-				PostHumidity( em, RelativeHumidity );
+        } // try
 
-				mw.WriteMessage("Current Relative Humidity:: " + RelativeHumidity + "%");
-        }
-
-        public void HandleMessage(Message Msg)
+        catch (Exception e)
         {
-					if ( Msg.GetMessageId() == -4 )
-					{
-						if (Msg.GetMessage().equalsIgnoreCase("H1")) // humidifier on
-						{
-							HumidifierState = true;
+            mw.WriteMessage("Error:: " + e);
 
-						} // if
+        } // catch
 
-						if (Msg.GetMessage().equalsIgnoreCase("H0")) // humidifier off
-						{
-							HumidifierState = false;
+        mw.WriteMessage("\nInitializing Humidity Simulation::" );
 
-						} // if
+        RelativeHumidity = GetRandomNumber() * (float) 100.00;
 
-						if (Msg.GetMessage().equalsIgnoreCase("D1")) // dehumidifier on
-						{
-							DehumidifierState = true;
-
-						} // if
-
-						if (Msg.GetMessage().equalsIgnoreCase("D0")) // dehumidifier off
-						{
-							DehumidifierState = false;
-
-						} // if
-
-					} // if
-        }
-
-        public void FunctionAfterRead()
+        if ( CoinToss() )
         {
-				// Now we trend the relative humidity according to the status of the
-				// humidifier/dehumidifier controller.
+            DriftValue = GetRandomNumber() * (float) -1.0;
 
-				if (HumidifierState)
-				{
-					RelativeHumidity += GetRandomNumber();
+        } else {
 
-				} // if humidifier is on
+            DriftValue = GetRandomNumber();
 
-				if (!HumidifierState && !DehumidifierState)
-				{
-					RelativeHumidity += DriftValue;
+        } // if
 
-				} // if both the humidifier and dehumidifier are off
+        mw.WriteMessage("   Initial Humidity Set:: " + RelativeHumidity );
+        mw.WriteMessage("   Drift Value Set:: " + DriftValue );
+    }
 
-				if (DehumidifierState)
-				{
-					RelativeHumidity -= GetRandomNumber();
+    public void FunctionBeforeRead()
+    {
+        // Post the current relative humidity
 
-				} // if dehumidifier is on
+        PostHumidity( em, RelativeHumidity );
 
-        }
+        mw.WriteMessage("Current Relative Humidity:: " + RelativeHumidity + "%");
+    }
+
+    public void HandleMessage(Message Msg)
+    {
+        if ( Msg.GetMessageId() == -4 )
+        {
+            if (Msg.GetMessage().equalsIgnoreCase("H1")) // humidifier on
+            {
+                HumidifierState = true;
+
+            } // if
+
+            if (Msg.GetMessage().equalsIgnoreCase("H0")) // humidifier off
+            {
+                HumidifierState = false;
+
+            } // if
+
+            if (Msg.GetMessage().equalsIgnoreCase("D1")) // dehumidifier on
+            {
+                DehumidifierState = true;
+
+            } // if
+
+            if (Msg.GetMessage().equalsIgnoreCase("D0")) // dehumidifier off
+            {
+                DehumidifierState = false;
+
+            } // if
+
+        } // if
+    }
+
+    public void FunctionAfterRead()
+    {
+        // Now we trend the relative humidity according to the status of the
+        // humidifier/dehumidifier controller.
+
+        if (HumidifierState)
+        {
+            RelativeHumidity += GetRandomNumber();
+
+        } // if humidifier is on
+
+        if (!HumidifierState && !DehumidifierState)
+        {
+            RelativeHumidity += DriftValue;
+
+        } // if both the humidifier and dehumidifier are off
+
+        if (DehumidifierState)
+        {
+            RelativeHumidity -= GetRandomNumber();
+
+        } // if dehumidifier is on
+
+    }
 
     /***************************************************************************
-	* CONCRETE METHOD:: GetRandomNumber
-	* Purpose: This method provides the simulation with random floating point
-	*		   humidity values between 0.1 and 0.9.
-	*
-	* Arguments: None.
-	*
-	* Returns: float
-	*
-	* Exceptions: None
-	*
-	***************************************************************************/
+     * CONCRETE METHOD:: GetRandomNumber
+     * Purpose: This method provides the simulation with random floating point
+     *		   humidity values between 0.1 and 0.9.
+     *
+     * Arguments: None.
+     *
+     * Returns: float
+     *
+     * Exceptions: None
+     *
+     ***************************************************************************/
 
-	static private float GetRandomNumber()
-	{
-		Random r = new Random();
-		Float Val;
+    static private float GetRandomNumber()
+    {
+        Random r = new Random();
+        Float Val;
 
-		Val = Float.valueOf((float)-1.0);
+        Val = Float.valueOf((float)-1.0);
 
-		while( Val < 0.1 )
-		{
-			Val = r.nextFloat();
-	 	}
+        while( Val < 0.1 )
+        {
+            Val = r.nextFloat();
+        }
 
-		return( Val.floatValue() );
+        return( Val.floatValue() );
 
-	} // GetRandomNumber
+    } // GetRandomNumber
 
-	/***************************************************************************
-	* CONCRETE METHOD:: CoinToss
-	* Purpose: This method provides a random true or false value used for
-	* determining the positiveness or negativeness of the drift value.
-	*
-	* Arguments: None.
-	*
-	* Returns: boolean
-	*
-	* Exceptions: None
-	*
-	***************************************************************************/
+    /***************************************************************************
+     * CONCRETE METHOD:: CoinToss
+     * Purpose: This method provides a random true or false value used for
+     * determining the positiveness or negativeness of the drift value.
+     *
+     * Arguments: None.
+     *
+     * Returns: boolean
+     *
+     * Exceptions: None
+     *
+     ***************************************************************************/
 
-	static private boolean CoinToss()
-	{
-		Random r = new Random();
+    static private boolean CoinToss()
+    {
+        Random r = new Random();
 
-		return(r.nextBoolean());
+        return(r.nextBoolean());
 
-	} // CoinToss
+    } // CoinToss
 
-	/***************************************************************************
-	* CONCRETE METHOD:: PostHumidity
-	* Purpose: This method posts the specified relative humidity value to the
-	* specified message manager. This method assumes an message ID of 2.
-	*
-	* Arguments: MessageManagerInterface ei - this is the messagemanger interface
-	*			 where the message will be posted.
-	*
-	*			 float humidity - this is the humidity value.
-	*
-	* Returns: none
-	*
-	* Exceptions: None
-	*
-	***************************************************************************/
+    /***************************************************************************
+     * CONCRETE METHOD:: PostHumidity
+     * Purpose: This method posts the specified relative humidity value to the
+     * specified message manager. This method assumes an message ID of 2.
+     *
+     * Arguments: MessageManagerInterface ei - this is the messagemanger interface
+     *			 where the message will be posted.
+     *
+     *			 float humidity - this is the humidity value.
+     *
+     * Returns: none
+     *
+     * Exceptions: None
+     *
+     ***************************************************************************/
 
-	static private void PostHumidity(MessageManagerInterface ei, float humidity )
-	{
-		// Here we create the message.
+    static private void PostHumidity(MessageManagerInterface ei, float humidity )
+    {
+        // Here we create the message.
 
-		Message msg = new Message( (int) 2, String.valueOf(humidity) );
+        Message msg = new Message( (int) 2, String.valueOf(humidity) );
 
-		// Here we send the message to the message manager.
+        // Here we send the message to the message manager.
 
-		try
-		{
-			ei.SendMessage( msg );
-			//mw.WriteMessage( "Sent Humidity Message" );
+        try
+        {
+            ei.SendMessage( msg );
+            //mw.WriteMessage( "Sent Humidity Message" );
 
-		} // try
+        } // try
 
-		catch (Exception e)
-		{
-			System.out.println( "Error Posting Relative Humidity:: " + e );
+        catch (Exception e)
+        {
+            System.out.println( "Error Posting Relative Humidity:: " + e );
 
-		} // catch
+        } // catch
 
-	} // PostHumidity
+    } // PostHumidity
 
 } // Humidity Sensor
