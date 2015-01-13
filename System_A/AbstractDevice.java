@@ -19,15 +19,14 @@
 *  public void FunctionAfterRead();
 *
 ******************************************************************************************************************/
-import InstrumentationPackage.*;
-import MessagePackage.*;
-import java.util.*;
+
+
 
 abstract class AbstractDevice
 {
     abstract public void InitDevice();
     abstract public void FunctionBeforeRead();
-    abstract public void HandleMessage(Message Msg);
+    abstract public void HandleMessage(Message msg);
     abstract public void FunctionAfterRead();
 
     protected MessageQueue eq = null;				// Message Queue

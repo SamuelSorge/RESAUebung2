@@ -34,12 +34,11 @@ import java.util.*;
 
 class HumidityController extends AbstractDevice
 {
-    public static int main(String args[])
+    public static void main(String args[])
     {
         HumidityController c = new HumidityController();
-        return c.mainLoop(args);
+        c.mainLoop(args);
     }
-    MessageManagerInterface em = null;	// Interface object to the message manager
     boolean HumidifierState = false;	// Heater state: false == off, true == on
     boolean DehumidifierState = false;	// Dehumidifier state: false == off, true == on
 
