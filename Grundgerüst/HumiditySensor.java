@@ -27,10 +27,10 @@ import java.util.*;
 
 class HumiditySensor extends AbstractDevice
 {
-    public static int main(String args[])
+    public static void main(String args[])
     {
         HumiditySensor s = new HumiditySensor();
-        return s.mainLoop(args);
+        s.mainLoop(args);
     }
 
     boolean HumidifierState = false;	// Humidifier state: false == off, true == on
