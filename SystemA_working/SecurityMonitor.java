@@ -34,6 +34,11 @@ class SecurityMonitor extends Thread
 	MessageWindow mw = null;					// This is the message window
 	private int isArmed = 0;
 	private int simDoorDestruction = 0;
+	private int simWindowDestruction = 0;
+	private int simMotionDetection = 0;
+	private int doorDestruction = 0;
+	private int windowDestruction = 0;
+	private int motionDetection = 0;
 
 	public SecurityMonitor()
 	{
@@ -88,6 +93,8 @@ class SecurityMonitor extends Thread
 		int	Delay = 1000;				// The loop delay (1 second)
 		boolean Done = false;			// Loop termination flag
 		int currentDoorDestructionState = 0;
+		int currentWindowDestructionState = 0;
+		int currentMotionDetectionState = 0;
 		
 		if (em != null)
 		{
@@ -168,6 +175,40 @@ class SecurityMonitor extends Thread
 
 					} // if
 					
+					if ( Msg.GetMessageId() == 7 ) // window destruction state reading
+					{
+						try
+						{
+
+							currentWindowDestructionState = Integer.valueOf(Msg.GetMessage()).intValue();
+
+						} // try
+
+						catch( Exception e )
+						{
+							mw.WriteMessage("Error reading window destruction state: " + e);
+
+						} // catch
+
+					} // if
+					
+					if ( Msg.GetMessageId() == 8 ) // motion detection state reading
+					{
+						try
+						{
+
+							currentMotionDetectionState = Integer.valueOf(Msg.GetMessage()).intValue();
+
+						} // try
+
+						catch( Exception e )
+						{
+							mw.WriteMessage("Error reading motion detection state: " + e);
+
+						} // catch
+
+					} // if
+					
 					// If the message ID == 99 then this is a signal that the simulation
 					// is to end. At this point, the loop termination flag is set to
 					// true and this process unregisters from the message manager.
@@ -198,17 +239,44 @@ class SecurityMonitor extends Thread
 				} // for
 				
 				mw.WriteMessage("Current Door Destruction State:: " + currentDoorDestructionState);
+				mw.WriteMessage("Current Window Destruction State:: " + currentWindowDestructionState);
+				mw.WriteMessage("Current Motion Detection State:: " + currentMotionDetectionState);
 
 				// Check temperature and effect control as necessary
 
 				if (currentDoorDestructionState == 1) // door is not ok
 				{
 					//ti.SetLampColorAndMessage("TEMP LOW", 3);
+					doorDestruction = currentDoorDestructionState;
 					doorAlarm(1);
 				}
 				else
 				{
+					doorDestruction = currentDoorDestructionState;
 					doorAlarm(0);					
+				}
+				
+				if (currentWindowDestructionState == 1) // window is not ok
+				{
+					//ti.SetLampColorAndMessage("TEMP LOW", 3);
+					windowDestruction = currentWindowDestructionState;
+					windowAlarm(1);
+				}
+				else
+				{
+					windowDestruction = currentWindowDestructionState;
+					windowAlarm(0);					
+				}
+				
+				if (currentMotionDetectionState == 1) // motion detection is not ok
+				{
+					//ti.SetLampColorAndMessage("TEMP LOW", 3);
+					motionDetection = currentMotionDetectionState;
+					motionAlarm(1);
+				}
+				else
+				{
+					motionAlarm(0);					
 				}
 
 				// This delay slows down the sample rate to Delay milliseconds
@@ -388,6 +456,100 @@ class SecurityMonitor extends Thread
 	} // SetAlarmSystemState
 	
 	/***************************************************************************
+	* CONCRETE METHOD:: SetSimWindowDestructionState
+	* Purpose: This method sets the humidity range
+	*
+	* Arguments: float lowhimi - low humidity range
+	*
+	* Returns: none
+	*
+	* Exceptions: None
+	*
+	***************************************************************************/
+
+	public void SetSimWindowDestructionState(int simWindowStateChanged)
+	{
+		simWindowDestruction = simWindowStateChanged;
+		mw.WriteMessage( "***Window destruction state changed to::" + simWindowDestruction +"%***" );
+
+		// Here we create the message.
+		
+		Message msg;
+
+		if ( simWindowDestruction == 1 )
+		{
+			msg = new Message( (int) -7, "WS1" );
+
+		} else {
+
+			msg = new Message( (int) -7, "WS0" );
+
+		} // if
+
+		// Here we send the message to the message manager.
+
+		try
+		{
+			em.SendMessage( msg );
+
+		} // try
+
+		catch (Exception e)
+		{
+			System.out.println("Error sending window destruction state control message::  " + e);
+
+		} // catch
+
+	} // SetAlarmSystemState
+	
+	/***************************************************************************
+	* CONCRETE METHOD:: SetSimMotionDetectionState
+	* Purpose: This method sets the humidity range
+	*
+	* Arguments: float lowhimi - low humidity range
+	*
+	* Returns: none
+	*
+	* Exceptions: None
+	*
+	***************************************************************************/
+
+	public void SetSimMotionDetectionState(int simMotionDetectionChanged)
+	{
+		simMotionDetection = simMotionDetectionChanged;
+		mw.WriteMessage( "***Motion detection state changed to::" + simMotionDetection +"%***" );
+
+		// Here we create the message.
+		
+		Message msg;
+
+		if ( simMotionDetection == 1 )
+		{
+			msg = new Message( (int) -8, "MS1" );
+
+		} else {
+
+			msg = new Message( (int) -8, "MS0" );
+
+		} // if
+
+		// Here we send the message to the message manager.
+
+		try
+		{
+			em.SendMessage( msg );
+
+		} // try
+
+		catch (Exception e)
+		{
+			System.out.println("Error sending motion detection state control message::  " + e);
+
+		} // catch
+
+	} // SetAlarmSystemState
+	
+	/***************************************************************************
 	* CONCRETE METHOD:: doorAlarm
 	* Purpose: This method sets the humidity range
 	*
@@ -402,19 +564,113 @@ class SecurityMonitor extends Thread
 	public void doorAlarm(int doorStateChanged)
 	{	
 		//TODO this is not the simulation value
-		mw.WriteMessage( "***Door destruction state changed to::" + simDoorDestruction +"%***" );
+		mw.WriteMessage( "***Door destruction state changed to::" + doorDestruction +"%***" );
 
 		// Here we create the message.
 		
 		Message msg;
 
-		if ( simDoorDestruction == 1 )
+		if ( doorStateChanged == 1 )
 		{
-			msg = new Message( (int) 6, "DS1" );
+			msg = new Message( (int) 16, "DS1" );
 
 		} else {
 
-			msg = new Message( (int) 6, "DS0" );
+			msg = new Message( (int) 16, "DS0" );
+
+		} // if
+
+		// Here we send the message to the message manager.
+
+		try
+		{
+			em.SendMessage( msg );
+
+		} // try
+
+		catch (Exception e)
+		{
+			System.out.println("Error sending door destruction state control message::  " + e);
+
+		} // catch
+
+	} // SetSimDoorDestructionState
+	
+	/***************************************************************************
+	* CONCRETE METHOD:: doorAlarm
+	* Purpose: This method sets the humidity range
+	*
+	* Arguments: int doorStateChanged - door destruction state
+	*
+	* Returns: none
+	*
+	* Exceptions: None
+	*
+	***************************************************************************/
+
+	public void windowAlarm(int windowStateChanged)
+	{	
+		//TODO this is not the simulation value
+		mw.WriteMessage( "***window destruction state changed to::" + windowDestruction +"%***" );
+
+		// Here we create the message.
+		
+		Message msg;
+
+		if ( windowStateChanged == 1 )
+		{
+			msg = new Message( (int) 17, "WS1" );
+
+		} else {
+
+			msg = new Message( (int) 17, "WS0" );
+
+		} // if
+
+		// Here we send the message to the message manager.
+
+		try
+		{
+			em.SendMessage( msg );
+
+		} // try
+
+		catch (Exception e)
+		{
+			System.out.println("Error sending window destruction state control message::  " + e);
+
+		} // catch
+
+	} // SetSimDoorDestructionState
+	
+	/***************************************************************************
+	* CONCRETE METHOD:: doorAlarm
+	* Purpose: This method sets the humidity range
+	*
+	* Arguments: int doorStateChanged - door destruction state
+	*
+	* Returns: none
+	*
+	* Exceptions: None
+	*
+	***************************************************************************/
+
+	public void motionAlarm(int motionStateChanged)
+	{	
+		//TODO this is not the simulation value
+		mw.WriteMessage( "***Motion detection state changed to::" + motionDetection +"%***" );
+
+		// Here we create the message.
+		
+		Message msg;
+
+		if ( motionStateChanged == 1 )
+		{
+			msg = new Message( (int) 18, "MS1" );
+
+		} else {
+
+			msg = new Message( (int) 18, "MS0" );
 
 		} // if
 

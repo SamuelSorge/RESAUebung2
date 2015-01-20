@@ -1,5 +1,5 @@
 /******************************************************************************************************************
- * File:DoorDestructionSensor.java
+ * File:motionDetectionSensor.java
  * Course: 17655
  * Project: Assignment A3
  * Copyright: Copyright (c) 2009 Carnegie Mellon University
@@ -8,31 +8,30 @@
  *
  * Description:
  *
- * This class simulates a door destruction sensor. It polls the message manager for messages corresponding to changes in state
- * of the door destruction and reacts to them by using this value as current value. The current
- * door destruction state is posted to the message manager.
+ * This class simulates a motion destruction sensor. It polls the message manager for messages corresponding to changes in state
+ * of the motion detection and reacts to them by using this value as current value. The current
+ * motion destruction state is posted to the message manager.
  *
  * Parameters: IP address of the message manager (on command line). If blank, it is assumed that the message manager is
  * on the local machine.
  *
  * Internal Methods:
- *   void PostDoorDestructionState(MessageManagerInterface ei, boolean doorstate )
+ *   void PostmotionDetectionState(MessageManagerInterface ei, boolean motionState )
  *
  ******************************************************************************************************************/
 import InstrumentationPackage.*;
 import MessagePackage.*;
 import java.util.*;
 
-class DoorDestructionSensor extends AbstractDevice {
+class MotionDetectionSensor extends AbstractDevice {
 	public static void main(String args[]) {
-		deviceDescription = "This class simulates a door destruction state sensor.";
-		DoorDestructionSensor s = new DoorDestructionSensor();
+		deviceDescription = "This class simulates a motion detection state sensor.";
+		MotionDetectionSensor s = new MotionDetectionSensor();
 		s.mainLoop(args);
 	}
 
-	int doorDestructionState = 0; // Door destruction state: false ==
-											// door is ok, true == door is not
-											// ok
+	int motionDetectionState = 0; // motion destruction state: false ==
+											// motion detected nothing (is ok), true == motion detected sth. (is not ok)
 
 	public void InitDevice() {
 		// We create a message window. Note that we place this panel about 1/2
@@ -47,7 +46,7 @@ class DoorDestructionSensor extends AbstractDevice {
 								// in terms
 		// of a percentage of the screen height
 
-		mw = new MessageWindow("Door Destruction Sensor", WinPosX, WinPosY);
+		mw = new MessageWindow("motion Destruction Sensor", WinPosX, WinPosY);
 
 		mw.WriteMessage("Registered with the message manager.");
 
@@ -62,29 +61,29 @@ class DoorDestructionSensor extends AbstractDevice {
 
 		} // catch
 
-		mw.WriteMessage("\nInitializing Door Destruction State Simulation::");
+		mw.WriteMessage("\nInitializing Motion Detection State Simulation::");
 
-		mw.WriteMessage("   Initial Door Destruction State:: "
-				+ doorDestructionState);
+		mw.WriteMessage("   Initial Motion Detection State:: "
+				+ motionDetectionState);
 	}
 
 	public void FunctionBeforeRead() {
-		// Post the current door destruction state
-		PostDoorDestructionState(em, doorDestructionState);
+		// Post the current motion detection state
+		PostMotionDetectionState(em, motionDetectionState);
 	}
 
 	public void HandleMessage(Message Msg) {
 
-		if (Msg.GetMessageId() == -6) {
-			if (Msg.GetMessage().equalsIgnoreCase("DS1")) // door is not ok
+		if (Msg.GetMessageId() == -8) {
+			if (Msg.GetMessage().equalsIgnoreCase("MS1")) // motion detection is not ok
 			{
-				doorDestructionState = 1;
+				motionDetectionState = 1;
 
 			} // if
 
-			if (Msg.GetMessage().equalsIgnoreCase("DS0")) // door is ok
+			if (Msg.GetMessage().equalsIgnoreCase("MS0")) // motion detection is ok
 			{
-				doorDestructionState = 0;
+				motionDetectionState = 0;
 
 			} // if
 
@@ -92,24 +91,24 @@ class DoorDestructionSensor extends AbstractDevice {
 	}
 
 	public void FunctionAfterRead() {
-		// Now we trend the door destruction state according to the status of
+		// Now we trend the motion detection state according to the status of
 		// the
 		// security controller.
 
-		mw.WriteMessage("   Current Door Destruction State:: "
-				+ doorDestructionState);
+		mw.WriteMessage("   Current Motion Detection State:: "
+				+ motionDetectionState);
 
 	}
 
 	/***************************************************************************
-	 * CONCRETE METHOD:: PostDoorDestructionState Purpose: This method posts the
-	 * specifieddoor destruction state to the specified message manager. This
+	 * CONCRETE METHOD:: PostmotionDetectionState Purpose: This method posts the
+	 * specified motion detection state to the specified message manager. This
 	 * method assumes an message ID of 6.
 	 *
-	 * Arguments: MessageManagerInterface ei - this is the messagemanger
+	 * Arguments: MessageManagerInterface ei - this is the messagemanager
 	 * interface where the message will be posted.
 	 *
-	 * boolean doorState - this is the door destruction state value.
+	 * boolean motionState - this is the motion destruction state value.
 	 *
 	 * Returns: none
 	 *
@@ -117,11 +116,11 @@ class DoorDestructionSensor extends AbstractDevice {
 	 *
 	 ***************************************************************************/
 
-	static private void PostDoorDestructionState(MessageManagerInterface ei,
-			int doorState) {
+	static private void PostMotionDetectionState(MessageManagerInterface ei,
+			int motionState) {
 		// Here we create the message.
 
-		Message msg = new Message((int) 6, String.valueOf(doorState));
+		Message msg = new Message((int) 8, String.valueOf(motionState));
 
 		// Here we send the message to the message manager.
 
@@ -131,10 +130,10 @@ class DoorDestructionSensor extends AbstractDevice {
 		} // try
 
 		catch (Exception e) {
-			System.out.println("Error Posting Door Destruction State:: " + e);
+			System.out.println("Error Posting Motion Detection State:: " + e);
 
 		} // catch
 
-	} // PostDoorDestructionState
+	} // PostMotionDetectionState
 
-} // DoorDestructionSensor
+} // motionDetectionSensor

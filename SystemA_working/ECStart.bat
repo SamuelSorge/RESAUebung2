@@ -16,3 +16,7 @@ START "TEMPERATURE SENSOR CONSOLE" /MIN /NORMAL java TemperatureSensor %1
 START "HUMIDITY SENSOR CONSOLE" /MIN /NORMAL java HumiditySensor %1
 %ECHO Starting Door Destruction State Sensor Console
 START "DOOR DESTRUCTION STATE SENSOR CONSOLE" /MIN /NORMAL java DoorDestructionSensor %1
+%ECHO Starting Motion Detection State Sensor Console
+START "MOTION DETECTION STATE SENSOR CONSOLE" /MIN /NORMAL java MotionDetectionSensor %1
+%ECHO Starting Door Destruction State Sensor Console
+START "WINDOW DESTRUCTION STATE SENSOR CONSOLE" /MIN /NORMAL java WindowDestructionSensor %1

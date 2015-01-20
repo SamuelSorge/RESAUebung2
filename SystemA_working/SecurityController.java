@@ -42,11 +42,13 @@ class SecurityController extends AbstractDevice
     }
     boolean isArmed = false;
     boolean doorState = false;
-    boolean doorAlarmState = false;
+    boolean windowState = false;
+    boolean motionState = false;
 
-    Indicator aci;
-    Indicator dai;
-    
+    Indicator aci; // alarm system
+    Indicator dai; // door
+    Indicator wai; // window
+    Indicator mai; // motion
 
     public void InitDevice()
     {
@@ -67,7 +69,9 @@ class SecurityController extends AbstractDevice
         // Now we put the indicators directly under the security status and control panel
 
         aci = new Indicator ("Alarm System OFF", mw.GetX(), mw.GetY()+mw.Height());
-        dai = new Indicator ("Alarm OFF", mw.GetX()+(aci.Width()*2), mw.GetY()+mw.Height());
+        dai = new Indicator ("Door Alarm OFF", mw.GetX()+(aci.Width()*2), mw.GetY()+mw.Height());
+        wai = new Indicator ("Window Alarm OFF", mw.GetX()+(dai.Width()*2), mw.GetY()+mw.Height());
+        mai = new Indicator ("Motion Alarm OFF", mw.GetX()+(wai.Width()*2), mw.GetY()+mw.Height());
         
 
         mw.WriteMessage("Registered with the message manager." );
@@ -93,7 +97,7 @@ class SecurityController extends AbstractDevice
 
     public void HandleMessage(Message Msg)
     {
-        if ( Msg.GetMessageId() == 6 )
+        if ( Msg.GetMessageId() == 16 )
         {
             if (Msg.GetMessage().equalsIgnoreCase("DS1")) // door alarm on
             {
@@ -114,6 +118,58 @@ class SecurityController extends AbstractDevice
                 // Confirm that the message was recieved and acted on
 
                 ConfirmMessage( em, "DS0" );
+
+            } // if
+
+        } // if
+        
+        if ( Msg.GetMessageId() == 17 )
+        {
+            if (Msg.GetMessage().equalsIgnoreCase("WS1")) // window alarm on
+            {
+                windowState = true;
+                mw.WriteMessage("Received window destruction state not ok message" );
+
+                // Confirm that the message was recieved and acted on
+
+                ConfirmMessage( em, "WS1" );
+
+            } // if
+
+            if (Msg.GetMessage().equalsIgnoreCase("WS0")) // window alarm off
+            {
+                windowState = false;
+                mw.WriteMessage("Received window destruction state ok message" );
+
+                // Confirm that the message was recieved and acted on
+
+                ConfirmMessage( em, "WS0" );
+
+            } // if
+
+        } // if
+        
+        if ( Msg.GetMessageId() == 18 )
+        {
+            if (Msg.GetMessage().equalsIgnoreCase("MS1")) // door alarm on
+            {
+                motionState = true;
+                mw.WriteMessage("Received motion detection state not ok message" );
+
+                // Confirm that the message was recieved and acted on
+
+                ConfirmMessage( em, "MS1" );
+
+            } // if
+
+            if (Msg.GetMessage().equalsIgnoreCase("MS0")) // door alarm off
+            {
+                motionState = false;
+                mw.WriteMessage("Received motion detection state ok message" );
+
+                // Confirm that the message was recieved and acted on
+
+                ConfirmMessage( em, "MS0" );
 
             } // if
 
@@ -177,6 +233,34 @@ class SecurityController extends AbstractDevice
             dai.SetLampColorAndMessage("DOOR ALARM OFF", 0);
 
         } // if
+        
+        if (windowState && isArmed)
+        {
+            // Set to green, dehumidifier is on
+
+            wai.SetLampColorAndMessage("WINDOW ALARM ON", 1);
+
+        } else {
+
+            // Set to black, dehumidifier is off
+
+            wai.SetLampColorAndMessage("WINDOW ALARM OFF", 0);
+
+        } // if
+        
+        if (motionState && isArmed)
+        {
+            // Set to green, dehumidifier is on
+
+            mai.SetLampColorAndMessage("MOTION ALARM ON", 1);
+
+        } else {
+
+            // Set to black, dehumidifier is off
+
+            mai.SetLampColorAndMessage("MOTION ALARM OFF", 0);
+
+        } // if
     }
 
     /***************************************************************************
@@ -201,14 +285,19 @@ class SecurityController extends AbstractDevice
         // Here we create the message.
 
         Message msgIsArmed = new Message( (int) -12, m );
-        Message msgDoorState = new Message( (int) -6, m );
+        Message msgDoorState = new Message( (int) -16, m );
+        Message msgWindowState = new Message( (int) -17, m );
+        Message msgMotionState = new Message( (int) -18, m );
 
         // Here we send the message to the message manager.
 
         try
         {
-            ei.SendMessage( msgIsArmed );
+        	for (int i=0;i<4;i++){
+        	ei.SendMessage( msgIsArmed );
             ei.SendMessage( msgDoorState );
+            ei.SendMessage( msgWindowState );
+            ei.SendMessage( msgMotionState );}
 
         } // try
 
