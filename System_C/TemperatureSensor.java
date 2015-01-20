@@ -50,7 +50,7 @@ class TemperatureSensor extends AbstractDevice
         float WinPosY = 0.3f; 	//This is the Y position of the message window in terms
         //of a percentage of the screen height
 
-        MessageWindow mw = new MessageWindow("Temperature Sensor", WinPosX, WinPosY );
+        mw = new MessageWindow("Temperature Sensor", WinPosX, WinPosY );
 
         mw.WriteMessage("Registered with the message manager." );
 
