@@ -19,27 +19,76 @@
 *  public void FunctionAfterRead();
 *
 ******************************************************************************************************************/
-
-
+import InstrumentationPackage.*;
+import MessagePackage.*;
+import java.util.*;
 
 abstract class AbstractDevice
 {
     abstract public void InitDevice();
     abstract public void FunctionBeforeRead();
-    abstract public void HandleMessage(Message msg);
+    abstract public void HandleMessage(Message Msg);
     abstract public void FunctionAfterRead();
 
     protected MessageQueue eq = null;				// Message Queue
 	protected int MsgId = 0;						// User specified message ID
 	protected MessageManagerInterface em = null;	// Interface object to the message manager
-	protected boolean Done = false;				// Loop termination flag
+	public boolean Done = false;				// Loop termination flag
     protected MessageWindow mw = null;
+	protected int Delay = 2500;					// The loop delay (2.5 seconds)
 
-    public int mainLoop(String args[])
+    static protected String deviceDescription = "";
+
+    public void HandleMessageLocal(Message Msg)
+    {
+        // System C code
+
+
+        // got a ping, answer with pong
+        if ( Msg.GetMessageId() == 100 )
+        {
+            Message msg = new Message( (int) 101, mw.getTitle()+"|"+deviceDescription );
+            try
+            {
+                em.SendMessage( msg );
+            } // try
+            catch (Exception e)
+            {
+                mw.WriteMessage("Error sending pong unregistering: " + e);
+            } // catch
+            // go
+        }
+
+
+        // If the message ID == 99 then this is a signal that the simulation
+        // is to end. At this point, the loop termination flag is set to
+        // true and this process unregisters from the message manager.
+
+        if ( Msg.GetMessageId() == 99 )
+        {
+            Done = true;
+
+            try
+            {
+                em.UnRegister();
+
+            } // try
+
+            catch (Exception e)
+            {
+                mw.WriteMessage("Error unregistering: " + e);
+
+            } // catch
+
+            mw.WriteMessage("\n\nSimulation Stopped. \n");
+            mw.Close();
+        } // if
+    }
+
+
+    public int InitDeviceLocal(String args[])
     {
 		String MsgMgrIP;					// Message Manager IP address
-		Message Msg = null;					// Message object
-		int	Delay = 2500;					// The loop delay (2.5 seconds)
 
 		/////////////////////////////////////////////////////////////////////////////////
 		// Get the IP address of the message manager
@@ -109,75 +158,64 @@ abstract class AbstractDevice
 			*********************************************************************/
 
 			mw.WriteMessage("Beginning Simulation... ");
+            return 1;
+        }
+        return -2;
+    }
 
+    public void doWork()
+    {
+		Message Msg = null;					// Message object
+        // ********************************************************************************************************
+        FunctionBeforeRead();
+        // ********************************************************************************************************
 
+        // Get the message queue
+        try
+        {
+            eq = em.GetMessageQueue();
+
+        } // try
+
+        catch( Exception e )
+        {
+            mw.WriteMessage("Error getting message queue::" + e );
+
+        } // catch
+
+        // If there are messages in the queue, we read through them.
+        // We are looking for MessageIDs = -4, this means the the humidify or
+        // dehumidifier has been turned on/off. Note that we get all the messages
+        // from the queue at once... there is a 2.5 second delay between samples,..
+        // so the assumption is that there should only be a message at most.
+        // If there are more, it is the last message that will effect the
+        // output of the humidity as it would in reality.
+
+        int qlen = eq.GetSize();
+
+        for ( int i = 0; i < qlen; i++ )
+        {
+            Msg = eq.GetMessage();
+            // ********************************************************************************************************
+            HandleMessage(Msg);
+            // ********************************************************************************************************
+            HandleMessageLocal(Msg);
+        } // for
+
+        // ********************************************************************************************************
+        FunctionAfterRead();
+        // ********************************************************************************************************
+    }
+
+    public int mainLoop(String args[])
+    {
+        if(InitDeviceLocal(args) == 1)
+        {
 			while ( !Done )
 			{
-                // ********************************************************************************************************
-                FunctionBeforeRead();
-                // ********************************************************************************************************
-
-				// Get the message queue
-				try
-				{
-					eq = em.GetMessageQueue();
-
-				} // try
-
-				catch( Exception e )
-				{
-					mw.WriteMessage("Error getting message queue::" + e );
-
-				} // catch
-
-				// If there are messages in the queue, we read through them.
-				// We are looking for MessageIDs = -4, this means the the humidify or
-				// dehumidifier has been turned on/off. Note that we get all the messages
-				// from the queue at once... there is a 2.5 second delay between samples,..
-				// so the assumption is that there should only be a message at most.
-				// If there are more, it is the last message that will effect the
-				// output of the humidity as it would in reality.
-
-				int qlen = eq.GetSize();
-
-				for ( int i = 0; i < qlen; i++ )
-				{
-					Msg = eq.GetMessage();
-                    // ********************************************************************************************************
-                    HandleMessage(Msg);
-                    // ********************************************************************************************************
-
-					// If the message ID == 99 then this is a signal that the simulation
-					// is to end. At this point, the loop termination flag is set to
-					// true and this process unregisters from the message manager.
-
-					if ( Msg.GetMessageId() == 99 )
-					{
-						Done = true;
-
-						try
-						{
-							em.UnRegister();
-
-				    	} // try
-
-				    	catch (Exception e)
-				    	{
-							mw.WriteMessage("Error unregistering: " + e);
-
-				    	} // catch
-
-				    	mw.WriteMessage("\n\nSimulation Stopped. \n");
-
-					} // if
-				} // for
-
-                // ********************************************************************************************************
-                FunctionAfterRead();
-                // ********************************************************************************************************
+                doWork();
 
 				// Here we wait for a 2.5 seconds before we start the next sample
-
 				try
 				{
 					Thread.sleep( Delay );
