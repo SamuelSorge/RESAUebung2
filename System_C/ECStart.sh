@@ -7,6 +7,11 @@
 #START "MUSEUM ENVIRONMENTAL CONTROL SYSTEM CONSOLE" /NORMAL java ECSConsole %1
 #%ECHO Starting Temperature Controller Console
 #START "TEMPERATURE CONTROLLER CONSOLE" /MIN /NORMAL java TemperatureController %1
+java DoorDestructionSensor &
+java MotionDetectionSensor &
+java SecurityController &
+java SecurityMonitor &
+java WindowDestructionSensor &
 java TemperatureController  &
 #%ECHO Starting Humidity Sensor Console
 #START "HUMIDITY CONTROLLER CONSOLE" /MIN /NORMAL java HumidityController %1
