@@ -360,6 +360,39 @@ class SecurityMonitor extends Thread
 		} // catch
 
 	} // Halt
+	
+	public void SetSprinklerState(boolean SprinklerChange){
+		mw.WriteMessage( "***Sprinkler state changed to::" + SprinklerChange +"%***" );
+
+		// Here we create the message.
+		
+		Message msg;
+
+		if ( SprinklerChange)
+		{
+			msg = new Message(88, Boolean.toString(true));
+
+		} else {
+
+			msg = new Message(88, Boolean.toString(false));
+
+		} // if
+
+		// Here we send the message to the message manager.
+
+		try
+		{
+			em.SendMessage( msg );
+
+		} // try
+
+		catch (Exception e)
+		{
+			System.out.println("Error sending door destruction state control message::  " + e);
+
+		} // catch
+	}
+	
 
 	/***************************************************************************
 	* CONCRETE METHOD:: SetSimDoorDestructionState

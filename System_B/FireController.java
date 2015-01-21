@@ -68,7 +68,7 @@ public class FireController extends AbstractDevice {
 		// TODO Auto-generated method stub
 		if(msg.GetMessageId() == 1){
 			float temp = Float.valueOf(msg.GetMessage()).floatValue();
-			if(temp < 30){
+			if(temp < 200){
 				FireState = false;
 			}else{
 				FireState = true;

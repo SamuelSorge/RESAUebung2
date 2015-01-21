@@ -7,6 +7,7 @@ public class SprinklerController extends AbstractDevice{
 	boolean SprinklerState = false; // Fire state: false == off, true == on
 	Indicator sprinklerI = null;
 	Thread thread = null;
+	Boolean Handled = false;
 	
 	public static void main(String[] args) {
 		
@@ -69,18 +70,19 @@ public class SprinklerController extends AbstractDevice{
 			if(thread != null){
 				thread.interrupt();
 			}
+			Handled = true;
 			boolean des = Boolean.valueOf(msg.GetMessage()).booleanValue();
 			Message message;
 			if(des){
 				SprinklerState = true;
 				mw.WriteMessage("User forced sprinkler on!");
-				sprinklerI.SetLampColorAndMessage("Fire ON", 1);
+				sprinklerI.SetLampColorAndMessage("SPRINKLER ON", 1);
 				message = new Message(1337, Boolean.toString(true));
 				mw.WriteMessage("Sprinkler turned on!");
 			}else{
 				SprinklerState = false;
 				mw.WriteMessage("User forced sprinkler off!");
-				sprinklerI.SetLampColorAndMessage("Fire OFF", 0);
+				sprinklerI.SetLampColorAndMessage("SPRINKLER OFF", 0);
 				message = new Message(1337, Boolean.toString(false));
 				mw.WriteMessage("Sprinkler turned off!");
 			}
@@ -97,7 +99,7 @@ public class SprinklerController extends AbstractDevice{
 			boolean fire = Boolean.valueOf(msg.GetMessage()).booleanValue();
 			if(fire){
 				mw.WriteMessage("Recieve Fire Signal!");
-				if(thread == null && !SprinklerState){
+				if(thread == null && !SprinklerState && !Handled){
 					thread = new Thread(new Runnable(){
 
 						public void run() {
@@ -126,6 +128,7 @@ public class SprinklerController extends AbstractDevice{
 				}
 			}else{
 				mw.WriteMessage("Recieve No Fire Signal!");
+				Handled = false;
 			}
 		}
 	}

@@ -30,7 +30,7 @@ class TemperatureSensor extends AbstractDevice
     public static void main(String args[])
     {
         deviceDescription = "This class simulates a temperature sensor";
-        HumiditySensor s = new HumiditySensor();
+        TemperatureSensor s = new TemperatureSensor();
         s.mainLoop(args);
     }
 
@@ -50,7 +50,7 @@ class TemperatureSensor extends AbstractDevice
         float WinPosY = 0.3f; 	//This is the Y position of the message window in terms
         //of a percentage of the screen height
 
-        MessageWindow mw = new MessageWindow("Temperature Sensor", WinPosX, WinPosY );
+        mw = new MessageWindow("Temperature Sensor", WinPosX, WinPosY );
 
         mw.WriteMessage("Registered with the message manager." );
 
@@ -69,7 +69,7 @@ class TemperatureSensor extends AbstractDevice
 
         mw.WriteMessage("\nInitializing Temperature Simulation::" );
 
-        CurrentTemperature = (float)50.00;
+        CurrentTemperature = GetRandomNumber() * (float) 100.00;
 
         if ( CoinToss() )
         {
